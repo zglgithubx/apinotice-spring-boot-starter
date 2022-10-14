@@ -1,4 +1,4 @@
-package com.github.apinotice;
+package io.github.zglgithubx.apinotice;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

@@ -1,4 +1,4 @@
-package com.github.apinotice;
+package io.github.zglgithubx.apinotice;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

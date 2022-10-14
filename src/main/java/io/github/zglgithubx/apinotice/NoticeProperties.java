@@ -1,4 +1,4 @@
-package com.github.apinotice;
+package io.github.zglgithubx.apinotice;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
