@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 /**
  * @ClassName ExceptionNotice
@@ -99,17 +100,12 @@ public class NoticeException {
 		MethodSignature signature = (MethodSignature) pj.getSignature();
 		Method method = signature.getMethod();
 		Notice notice = method.getAnnotation(Notice.class);
-		String to = noticeProperties.getDefaultEmail();
-		if (notice!=null && !StringUtils.isEmpty(notice.email())) {
-			to = notice.email();
-		}
-		if(!StringUtils.isEmpty(to)){
+		String to = notice.email();
+		if(isValidEmail(to)){
 			sendSimpleMail(to,stringBuilder.toString());
 		}
 	}
-
-
-
+	
 	/**
 	 * @Author ZhuGuangLiang <786945363@qq.com>
 	 * @Description 发送通知给接口负责人
@@ -130,5 +126,19 @@ public class NoticeException {
 		} catch (UnsupportedEncodingException | javax.mail.MessagingException e) {
 			throw new RuntimeException("通知发送失败，请重新发送");
 		}
+	}
+
+	/**
+	 * @Author ZhuGuangLiang <786945363@qq.com>
+	 * @Description 验证邮箱的有效性
+	 * @Date 2022/10/14 21:01 
+	 * @Param [email]
+	 * @return boolean
+	 */
+	public boolean isValidEmail(String email) {
+		if ((email != null) && (!email.isEmpty())) {
+			return Pattern.matches("^(\\w+([-.][A-Za-z0-9]+)*){3,18}@\\w+([-.][A-Za-z0-9]+)*\\.\\w+([-.][A-Za-z0-9]+)*$", email);
+		}
+		return false;
 	}
 }

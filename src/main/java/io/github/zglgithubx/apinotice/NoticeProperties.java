@@ -9,8 +9,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties(prefix = "abnormal")
 public class NoticeProperties {
-	/** 默认的通知人邮件地址 */
-	private String defaultEmail;
 	/** 发件人名称 */
 	private String sender="API助手";
 
@@ -20,13 +18,5 @@ public class NoticeProperties {
 
 	public void setSender(String sender) {
 		this.sender = sender;
-	}
-
-	public String getDefaultEmail() {
-		return defaultEmail;
-	}
-
-	public void setDefaultEmail(String defaultEmail) {
-		this.defaultEmail = defaultEmail;
 	}
 }
