@@ -1,0 +1,30 @@
+{
+  "groups": [
+    {
+      "name": "abnormal",
+      "type": "com.github.apinotice.NoticeProperties",
+      "sourceType": "com.github.apinotice.NoticeProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "abnormal.default-email",
+      "type": "java.lang.String",
+      "description": "默认的通知人邮件地址",
+      "sourceType": "com.github.apinotice.NoticeProperties"
+    },
+    {
+      "name": "abnormal.defaultEmail",
+      "type": "java.lang.String",
+      "description": "默认接收邮箱地址."
+    },
+    {
+      "name": "abnormal.sender",
+      "type": "java.lang.String",
+      "description": "发件人名称.",
+      "sourceType": "com.github.apinotice.NoticeProperties",
+      "defaultValue": "API助手"
+    }
+  ],
+  "hints": []
+}
