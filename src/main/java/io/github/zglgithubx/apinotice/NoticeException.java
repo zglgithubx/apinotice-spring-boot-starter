@@ -105,7 +105,7 @@ public class NoticeException {
 			sendSimpleMail(to,stringBuilder.toString());
 		}
 	}
-	
+
 	/**
 	 * @Author ZhuGuangLiang <786945363@qq.com>
 	 * @Description 发送通知给接口负责人
@@ -131,7 +131,7 @@ public class NoticeException {
 	/**
 	 * @Author ZhuGuangLiang <786945363@qq.com>
 	 * @Description 验证邮箱的有效性
-	 * @Date 2022/10/14 21:01 
+	 * @Date 2022/10/14 21:26
 	 * @Param [email]
 	 * @return boolean
 	 */
