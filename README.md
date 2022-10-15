@@ -7,7 +7,7 @@
 <dependency>
     <groupId>io.github.zglgithubx</groupId>
     <artifactId>apinotice-spring-boot-starter</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1-RELEASE</version>
 </dependency>
 ```
 ### 3、例子
