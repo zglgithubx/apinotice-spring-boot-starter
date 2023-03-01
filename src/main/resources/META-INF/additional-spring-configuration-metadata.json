@@ -3,8 +3,38 @@
     {
       "name": "abnormal.sender",
       "type": "java.lang.String",
-      "description": "发件人名称.",
+      "description": "发件人.",
       "defaultValue": "API助手"
+    },
+    {
+      "name": "abnormal.thread-pool.core-pool-size",
+      "type": "java.lang.Integer",
+      "description": "核心线程数.",
+      "defaultValue": 10
+    },
+    {
+      "name": "abnormal.thread-pool.max-pool-size",
+      "type": "java.lang.Integer",
+      "description": "最大线程数.",
+      "defaultValue": 15
+    },
+    {
+      "name": "abnormal.thread-pool.queue-capacity",
+      "type": "java.lang.Integer",
+      "description": "工作队列容量.",
+      "defaultValue": 100
+    },
+    {
+      "name": "abnormal.thread-pool.keep-alive-seconds",
+      "type": "java.lang.Integer",
+      "description": "线程池维护线程所允许的空闲时间(秒).",
+      "defaultValue": 300
+    },
+    {
+      "name": "abnormal.thread-pool.rejected-execution-handler",
+      "type": "java.lang.String",
+      "description": "拒绝策略.",
+      "defaultValue": "CallerRunsPolicy"
     }
   ]
 }

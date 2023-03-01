@@ -6,7 +6,7 @@
 
     <groupId>io.github.zglgithubx</groupId>
     <artifactId>apinotice-spring-boot-starter</artifactId>
-    <version>0.0.1-RELEASE</version>
+    <version>0.0.2-RELEASE</version>
     <description>This project is for exception alerts</description>
     <url>https://github.com/zglgithubx/apinotice-spring-boot-starter</url>
     <name>ApiNotice</name>

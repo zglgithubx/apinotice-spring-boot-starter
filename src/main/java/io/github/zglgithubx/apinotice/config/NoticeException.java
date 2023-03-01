@@ -1,12 +1,14 @@
-package io.github.zglgithubx.apinotice;
+package io.github.zglgithubx.apinotice.config;
 
+import io.github.zglgithubx.apinotice.annotation.Notice;
+import io.github.zglgithubx.apinotice.config.NoticeProperties;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -23,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.regex.Pattern;
 
 /**
@@ -35,20 +39,48 @@ public class NoticeException {
 	private JavaMailSender mailSender;
 	private NoticeProperties noticeProperties;
 	private String from;
-	public void setMailSender(JavaMailSender mailSender) {
-		this.mailSender = mailSender;
-	}
-	public void setNoticeProperties(NoticeProperties noticeProperties) {
-		this.noticeProperties = noticeProperties;
-	}
-	public void setFrom(String from) {
-		this.from = from;
+	private ThreadPoolTaskExecutor executor;
+
+	@Around("@annotation(notice)")
+	public Object around(ProceedingJoinPoint pj, Notice notice) throws Throwable {
+		long start = System.currentTimeMillis();
+		Object proceed ;
+		try {
+			proceed= pj.proceed();
+		} catch (RuntimeException e){
+			//异步处理异常
+			CompletableFuture.supplyAsync(()->{
+				return getMessage(pj,e);
+			},executor).whenComplete((res,throwable)->{
+				if(!res.isEmpty()){
+					concatError(start,res, pj);
+				}
+			}).exceptionally(throwable -> {
+				System.err.println("【异步通知出现异常】："+throwable);
+				return throwable.getMessage();
+			});
+			throw e;
+		}
+		return proceed;
 	}
 
-	private String getMessage(ProceedingJoinPoint pj, Exception e) {
-		RequestAttributes ra = RequestContextHolder.getRequestAttributes();
-		ServletRequestAttributes sra = (ServletRequestAttributes) ra;
-		HttpServletRequest request = sra.getRequest();
+	private void concatError(long start, String message, ProceedingJoinPoint pj) {
+		if(message.isEmpty()){
+			return;
+		}
+		StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append("<p>方法耗时：").append(System.currentTimeMillis() - start).append("ms</p>");
+		stringBuilder.append(message);
+		MethodSignature signature = (MethodSignature) pj.getSignature();
+		Method method = signature.getMethod();
+		Notice notice = method.getAnnotation(Notice.class);
+		String to = notice.email();
+		if(isValidEmail(to)){
+			sendSimpleMail(to,stringBuilder.toString());
+		}
+	}
+
+	private String getMessage(ProceedingJoinPoint pj, RuntimeException e) {
 		MethodSignature signature = (MethodSignature) pj.getSignature();
 		Method method = signature.getMethod();
 		Notice notice=method.getAnnotation(Notice.class);
@@ -56,8 +88,7 @@ public class NoticeException {
 		if (notice!=null && !StringUtils.isEmpty(notice.author())) {
 			charger = notice.author().trim();
 		}
-		StringBuilder joiner = new StringBuilder("<p>负责人："+charger+"</p>")
-				.append("<p>请求路径："+request.getRequestURI()+"</p>")
+		StringBuilder joiner = new StringBuilder("<p>责任人："+charger+"</p>")
 				.append("<p>类名：").append(pj.getTarget().getClass().getName()+"</p>")
 				.append("<p>方法名："+pj.getSignature().getName()+"</p>")
 				.append("<p>参数：");
@@ -75,52 +106,26 @@ public class NoticeException {
 			joiner.append("无</p>");
 		}
 		if (Objects.nonNull(e)) {
-			joiner.append("<p>异常信息：</p>").append(e.fillInStackTrace()+": "+e.getCause());
+			joiner.append("<p>异常信息：</p>").append(e);
 		}
 		return joiner.toString();
 	}
 
-	@Around("@annotation(notice)")
-	public Object around(ProceedingJoinPoint pj, Notice notice) throws Throwable {
-		long start = System.currentTimeMillis();
-		Object proceed ;
-		try {
-			proceed= pj.proceed();
-		} catch (Exception e){
-			concatError(start, getMessage(pj, e), pj);
-			throw e;
-		}
-		return proceed;
-	}
-
-	private void concatError(long start, String message, ProceedingJoinPoint pj) {
-		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append("<p>接口耗时：").append(System.currentTimeMillis() - start).append("ms</p>");
-		stringBuilder.append(message);
-		MethodSignature signature = (MethodSignature) pj.getSignature();
-		Method method = signature.getMethod();
-		Notice notice = method.getAnnotation(Notice.class);
-		String to = notice.email();
-		if(isValidEmail(to)){
-			sendSimpleMail(to,stringBuilder.toString());
-		}
-	}
-
 	/**
 	 * @Author ZhuGuangLiang <786945363@qq.com>
-	 * @Description 发送通知给接口负责人
+	 * @Description 发送通知给负责人
 	 * @Date 2022/10/13 09:25
 	 * @Param [to, subject, content]
 	 * @return void
 	 */
-	@Async
+
 	public void sendSimpleMail(String to, String content) {
 		MimeMessage message = mailSender.createMimeMessage();
 		try {
 			MimeMessageHelper helper = new MimeMessageHelper(message, true);
 			helper.setFrom(new InternetAddress(from, noticeProperties.getSender(), "UTF-8"));
 			helper.setTo(to);
-			helper.setSubject("接口异常提醒");
+			helper.setSubject("方法异常提醒");
 			helper.setText(content, true);
 			mailSender.send(message);
 		} catch (UnsupportedEncodingException | javax.mail.MessagingException e) {
@@ -140,5 +145,16 @@ public class NoticeException {
 			return Pattern.matches("^(\\w+([-.][A-Za-z0-9]+)*){3,18}@\\w+([-.][A-Za-z0-9]+)*\\.\\w+([-.][A-Za-z0-9]+)*$", email);
 		}
 		return false;
+	}
+
+	public void setExecutor(ThreadPoolTaskExecutor executor) { this.executor = executor; }
+	public void setMailSender(JavaMailSender mailSender) {
+		this.mailSender = mailSender;
+	}
+	public void setNoticeProperties(NoticeProperties noticeProperties) {
+		this.noticeProperties = noticeProperties;
+	}
+	public void setFrom(String from) {
+		this.from = from;
 	}
 }

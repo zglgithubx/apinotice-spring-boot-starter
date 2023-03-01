@@ -7,7 +7,7 @@
 <dependency>
     <groupId>io.github.zglgithubx</groupId>
     <artifactId>apinotice-spring-boot-starter</artifactId>
-    <version>0.0.1-RELEASE</version>
+    <version>0.0.2-RELEASE</version>
 </dependency>
 ```
 ### 3、例子
@@ -35,6 +35,18 @@ spring:
                 fallback: false
 abnormal:
     sender: 发件人，默认为：API助手
+    # 线程池配置
+    thread-pool:
+        # 核心线程数
+        core-pool-size: 10
+        # 最大线程数
+        max-pool-size: 15
+        # 工作队列容量
+        queue-capacity: 500
+        # 线程池维护线程所允许的空闲时间
+        keep-alive-seconds: 300
+        # 拒绝策略
+        rejected-execution-handler: CallerRunsPolicy
 ```
 #### 3.2、使用
 此功能的核心是使用注解@Notice，包含两个属性，author:作者，email:接收提醒的邮箱地址
@@ -48,5 +60,13 @@ public class TestController {
 	}
 }
 ```
+
+### 版本信息  
+#### 0.0.2-RELEASE  
+- 新增：使用Spring线程池，实现异步通知，降低方法耗时。
+
+#### 0.0.1-RELEASE  
+
+- 新增：邮箱通知。
 
 
